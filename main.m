@@ -2,23 +2,32 @@ clc,clear,close all
 
 %% Setup Problem
 
-addpath('zermelo')
-your_func = @(K) zermelo_example(K);
-control_matrix_sizes = 2;
+% addpath('zermelo')
+% your_func = @(K) zermelo_example(K);
+% control_matrix_sizes = 2;
+% lb_lambda = 1e-8;
+% ub_lambda = 10;
+% num_pso_runs = 1;
+% % pso_options = optimoptions('particleswarm',...
+% %                            'MaxIterations',10000,...
+% %                            'SwarmSize',20,...
+% %                            'MaxStallIterations',50,...
+% %                            'UseParallel',false);
+% pso_options = optimoptions('particleswarm');
+
+addpath('spacecraft_attitude_control')
+your_func = @(K_p,K_d) sac_example(K_p,K_d);
+% your_func = @(K_p,K_d) sac_example_2(K_p,K_d);
+control_matrix_sizes = [3 3];
 lb_lambda = 1e-8;
 ub_lambda = 10;
 num_pso_runs = 1;
-% pso_options = optimoptions('particleswarm',...
-%                            'MaxIterations',10000,...
-%                            'SwarmSize',20,...
-%                            'MaxStallIterations',50,...
-%                            'UseParallel',false);
 pso_options = optimoptions('particleswarm');
 
 %% Control Matrices Settings
 
 % determine whether matrices are diagonal or full
-full_flag = 1; % 0 - diagnol matrix, 1 - full matrix
+full_flag = 1; % 0 - diagonol matrix, 1 - full matrix
 
 % determine type of parameterization to be used for full matrices
 param_flag = 2; % 1 - euler, 2 - cayley
@@ -69,6 +78,8 @@ k_sol_best = k_sol(:,obj_best_ind);
 
 % re-evaluate to obtain final control matrices
 [~,K] = pso_func(k_sol_best,your_func,param_flag,l,n,m);
+
+%%
 
 % re-evaluate for plotting
 [~,out] = your_func(K{:});

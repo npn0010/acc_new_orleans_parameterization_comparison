@@ -40,12 +40,12 @@ J    = sym('J');
 dJdt = 1/2*(U_op.'*U_op);
 
 % generate dynamics function file
-matlabFunction([dXdt; dJdt],'Vars',{t,[X;J],K},'File','eom_func.m');
+matlabFunction([dXdt; dJdt],'Vars',{t,[X;J],K},'File','zermelo_eom.m');
 
 % generate functions for plotting
-matlabFunction(     U_op,'Vars',{[X;J],K},'File','U_func.m');
-matlabFunction(U_op_norm,'Vars',{[X;J],K},'File','U_norm_func.m');
-matlabFunction(        V,'Vars',{[X;J],K},'File','V_func.m');
-matlabFunction(     dVdt,'Vars',{[X;J],K},'File','dVdt_func.m');
-matlabFunction(        f,'Vars',{x,y},'File','f_func.m');
-matlabFunction(        g,'Vars',{x,y},'File','g_func.m');
+matlabFunction(     U_op,'Vars',{[X;J],K},'File','zermelo_U.m');
+matlabFunction(U_op_norm,'Vars',{[X;J],K},'File','zermelo_U_norm.m');
+matlabFunction(        V,'Vars',{[X;J],K},'File','zermelo_V.m');
+matlabFunction(     dVdt,'Vars',{[X;J],K},'File','zermelo_dVdt.m');
+matlabFunction(        f,'Vars',{x,y},'File','zermelo_f.m');
+matlabFunction(        g,'Vars',{x,y},'File','zermelo_g.m');

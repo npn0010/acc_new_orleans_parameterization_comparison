@@ -10,7 +10,7 @@ tf = 1000;
 ode_options = odeset('RelTol',1e-10,'AbsTol',1e-10,'Events',@(t,X) zermelo_event_function(t,X));
 
 % integrate dynamics with closed-loop controller
-[t,X,te,ye,ie] = ode113(@(t,X) eom_func(t,X,K),[0 tf],[X_0; 0],ode_options);
+[t,X,te,ye,ie] = ode113(@(t,X) zermelo_eom(t,X,K),[0 tf],[X_0; 0],ode_options);
 
 % evaluate cost
 if ie == 1 % if solution converges according to event detection, return control effort
@@ -25,10 +25,9 @@ if nargout > 1
     out.t = t;
     out.X = X;
     
-    dXdt = eom_func(t,X.',K);
-    U    = U_func(X.',K);
-    V    = V_func(X.',K);
-    dVdt = dVdt_func(X.',K);
+    U    = zermelo_U(X.',K);
+    V    = zermelo_V(X.',K);
+    dVdt = zermelo_dVdt(X.',K);
     
     x = X(:,1);
     y = X(:,2);
@@ -43,7 +42,7 @@ if nargout > 1
     
     fs = 16;
 
-    figure('Name','Lyapunov_Function')
+    figure('Name','Lyapunozermelo_Vtion')
     subplot(2,1,1)
     hold on
     box on
@@ -91,7 +90,7 @@ if nargout > 1
     figure('Name','Phase_Space')
     hold on
     box on
-    quiver(X_grid,Y_grid,f_func(X_grid,Y_grid),g_func(X_grid,Y_grid),1,'DisplayName','$(f,g)$','LineWidth',1,'AutoScale','on','Color','k')
+    quiver(X_grid,Y_grid,zermelo_f(X_grid,Y_grid),zermelo_g(X_grid,Y_grid),1,'DisplayName','$(f,g)$','LineWidth',1,'AutoScale','on','Color','k')
     plot(x,y,'-g','DisplayName',['$(x(t),y(t))$, ',matrixStr],'LineWidth',2)
     plot(0,0,'.b','MarkerSize',20,'DisplayName','$(x_0,y_0)$')
     plot(X_0(1),X_0(2),'.r','MarkerSize',20,'DisplayName','$(x_f,y_f)$')
@@ -105,15 +104,15 @@ if nargout > 1
     
     K_flag = K(1,2) ~= 0;
 
-    figure('Name','Lyapunov_Function_3D')
+    figure('Name','Lyapunozermelo_Vtion_3D')
     hold on
     box on
-    % plot3(X(:,1),X(:,2),V_func(X(:,1:2).',K),'-k','DisplayName','{\boldmath$x$}','LineWidth',2)
-    plot3(x,y,V_func([x y].',K),'-g','DisplayName',['$(x(t),y(t))$, ',matrixStr],'LineWidth',2)
-    plot3(X_0(1),X_0(2),V_func(X_0,K),'.r','MarkerSize',20,'DisplayName',sprintf('{\\boldmath$x$}$(0)=(%g,%g)$',X_0(1),X_0(2)))
-    plot3(0,0,V_func([0; 0],K),'.b','MarkerSize',20,'DisplayName','$(0,0)$')
-    fmesh(@(x,y) V_func([x;y],K),[xy_lb xy_ub xy_lb xy_ub],'ShowContours','off','MeshDensity',50,'DisplayName',sprintf('$V_%g(x,y)$',K_flag))
-    % fmesh(@(x,y) V_func([x;y],K),[xy_lb xy_ub xy_lb xy_ub],'ShowContours','on','MeshDensity',50,'DisplayName','$V(x,y)$')
+    % plot3(X(:,1),X(:,2),zermelo_V(X(:,1:2).',K),'-k','DisplayName','{\boldmath$x$}','LineWidth',2)
+    plot3(x,y,zermelo_V([x y].',K),'-g','DisplayName',['$(x(t),y(t))$, ',matrixStr],'LineWidth',2)
+    plot3(X_0(1),X_0(2),zermelo_V(X_0,K),'.r','MarkerSize',20,'DisplayName',sprintf('{\\boldmath$x$}$(0)=(%g,%g)$',X_0(1),X_0(2)))
+    plot3(0,0,zermelo_V([0; 0],K),'.b','MarkerSize',20,'DisplayName','$(0,0)$')
+    fmesh(@(x,y) zermelo_V([x;y],K),[xy_lb xy_ub xy_lb xy_ub],'ShowContours','off','MeshDensity',50,'DisplayName',sprintf('$V_%g(x,y)$',K_flag))
+    % fmesh(@(x,y) zermelo_V([x;y],K),[xy_lb xy_ub xy_lb xy_ub],'ShowContours','on','MeshDensity',50,'DisplayName','$V(x,y)$')
     xlabel('$x$','Interpreter','latex')
     ylabel('$y$','Interpreter','latex')
     zlabel(sprintf('$V_%g$',K_flag),'Interpreter','latex')
@@ -128,11 +127,11 @@ if nargout > 1
     figure('Name','Lyapunov_Time_Derivative_3D')
     hold on
     box on
-    plot3(X(:,1),X(:,2),dVdt_func(X(:,1:2).',K),'-g','DisplayName',['$(x(t),y(t))$, ',matrixStr],'LineWidth',2)
-    % plot3(X(:,1),X(:,2),dVdt_func(X(:,1:2).',K),'-k','DisplayName','{\boldmath$x$}','LineWidth',2)
-    plot3(X_0(1),X_0(2),dVdt_func(X_0,K),'.r','MarkerSize',20,'DisplayName',sprintf('{\\boldmath$x$}$(0)=(%g,%g)$',X_0(1),X_0(2)))
-    plot3(0,0,dVdt_func([0;0],K),'.b','MarkerSize',20,'DisplayName','$(0,0)$')
-    fmesh(@(x,y) dVdt_func([x;y],K),[xy_lb xy_ub xy_lb xy_ub],'ShowContours','off','MeshDensity',50,'DisplayName',sprintf('$\\dot{V}_%g(x,y)$',K_flag))
+    plot3(X(:,1),X(:,2),zermelo_dVdt(X(:,1:2).',K),'-g','DisplayName',['$(x(t),y(t))$, ',matrixStr],'LineWidth',2)
+    % plot3(X(:,1),X(:,2),zermelo_dVdt(X(:,1:2).',K),'-k','DisplayName','{\boldmath$x$}','LineWidth',2)
+    plot3(X_0(1),X_0(2),zermelo_dVdt(X_0,K),'.r','MarkerSize',20,'DisplayName',sprintf('{\\boldmath$x$}$(0)=(%g,%g)$',X_0(1),X_0(2)))
+    plot3(0,0,zermelo_dVdt([0;0],K),'.b','MarkerSize',20,'DisplayName','$(0,0)$')
+    fmesh(@(x,y) zermelo_dVdt([x;y],K),[xy_lb xy_ub xy_lb xy_ub],'ShowContours','off','MeshDensity',50,'DisplayName',sprintf('$\\dot{V}_%g(x,y)$',K_flag))
     xlabel('$x$','Interpreter','latex')
     ylabel('$y$','Interpreter','latex')
     zlabel(sprintf('$\\dot{V}_%g$',K_flag),'Interpreter','latex')
@@ -147,11 +146,11 @@ if nargout > 1
     figure('Name','Control_Surface')
     hold on
     box on
-    fmesh(@(x,y) U_norm_func([x;y],K),[xy_lb xy_ub xy_lb xy_ub],'ShowContours','off','MeshDensity',50,'DisplayName',sprintf('$\\|${\\boldmath$u$}$_%g\\|$',K_flag))
-    plot3(X_0(1),X_0(2),U_norm_func(X_0,K),'.r','MarkerSize',20,'DisplayName',sprintf('{\\boldmath$x$}$(0)=(%g,%g)$',X_0(1),X_0(2)))
-    plot3(0,0,U_func([0; 0],K),'.b','MarkerSize',20,'DisplayName','$(0,0)$')
-    plot3(X(:,1),X(:,2),U_norm_func(X(:,1:2).',K),'-k','DisplayName','{\boldmath$x$}','LineWidth',2)
-    % fmesh(@(x,y) V_func([x;y],K),[xy_lb xy_ub xy_lb xy_ub],'ShowContours','on','MeshDensity',50,'DisplayName','$V(x,y)$')
+    fmesh(@(x,y) zermelo_U_norm([x;y],K),[xy_lb xy_ub xy_lb xy_ub],'ShowContours','off','MeshDensity',50,'DisplayName',sprintf('$\\|${\\boldmath$u$}$_%g\\|$',K_flag))
+    plot3(X_0(1),X_0(2),zermelo_U_norm(X_0,K),'.r','MarkerSize',20,'DisplayName',sprintf('{\\boldmath$x$}$(0)=(%g,%g)$',X_0(1),X_0(2)))
+    plot3(0,0,zermelo_U([0; 0],K),'.b','MarkerSize',20,'DisplayName','$(0,0)$')
+    plot3(X(:,1),X(:,2),zermelo_U_norm(X(:,1:2).',K),'-k','DisplayName','{\boldmath$x$}','LineWidth',2)
+    % fmesh(@(x,y) zermelo_V([x;y],K),[xy_lb xy_ub xy_lb xy_ub],'ShowContours','on','MeshDensity',50,'DisplayName','$V(x,y)$')
     xlabel('$x$','Interpreter','latex')
     ylabel('$y$','Interpreter','latex')
     zlabel(sprintf('$\\|${\\boldmath$u$}$_%g\\|$',K_flag),'Interpreter','latex')
