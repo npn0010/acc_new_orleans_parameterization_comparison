@@ -1,9 +1,6 @@
 # Ignore everything
 *
 
-# Ignore Folder for Scratch Work
-scratch/
-
 # But not these files...
 !.gitignore
 !*.m
@@ -11,3 +8,6 @@ scratch/
 
 # ...even if they are in subdirectories
 !*/
+
+# Ignore Everything Folder for Scratch Work
+scratch/
