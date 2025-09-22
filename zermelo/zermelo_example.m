@@ -2,6 +2,7 @@ function [obj,out] = zermelo_example(K)
 
 % initial boundary conditions
 X_0 = [-8; 6];
+% X_0 = [8; 6];
 
 % maximum final time (infinite horizon problem so it's arbitrarily large)
 tf = 1000;

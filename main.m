@@ -1,48 +1,37 @@
 clc,clear,close all
 
-%% Setup Problem
+%% Example Problems
 
+% prob_name = 'zermelo';
 % addpath('zermelo')
 % your_func = @(K) zermelo_example(K);
-% control_matrix_sizes = 2;
+% n = 2;
 % lb_lambda = 1e-8;
 % ub_lambda = 10;
-% num_pso_runs = 1;
-% % pso_options = optimoptions('particleswarm',...
-% %                            'MaxIterations',10000,...
-% %                            'SwarmSize',20,...
-% %                            'MaxStallIterations',50,...
-% %                            'UseParallel',false);
-% pso_options = optimoptions('particleswarm');
+% num_pso_runs = 10;
+% pso_options = optimoptions('particleswarm','UseParallel',false);
 
+prob_name = 'sac';
 addpath('spacecraft_attitude_control')
 your_func = @(K_p,K_d) sac_example(K_p,K_d);
-% your_func = @(K_p,K_d) sac_example_2(K_p,K_d);
-control_matrix_sizes = [3 3];
+n = [3 3];
 lb_lambda = 1e-8;
-ub_lambda = 10;
-num_pso_runs = 1;
-pso_options = optimoptions('particleswarm');
+ub_lambda = 20;
+num_pso_runs = 10;
+pso_options = optimoptions('particleswarm','UseParallel',true);
 
-%% Control Matrices Settings
+%% Select Control Matrix Parameterization
 
-% determine whether matrices are diagonal or full
-full_flag = 1; % 0 - diagonol matrix, 1 - full matrix
-
-% determine type of parameterization to be used for full matrices
-param_flag = 2; % 1 - euler, 2 - cayley
+K_flag = 3; % 1 - diagonal matrix, 2 - givens, 3 - cayley, 4 - cayley mapped
 
 %% Run Particle Swarm Optimization
 
-% number of control matrices
-l = length(control_matrix_sizes);
+l = length(n); % number of control matrices
 
 % determine number of variables needed
-n = zeros(l,1);
-m = zeros(l,1);
-for i = 1:l
-    n(i) = control_matrix_sizes(i);
-    if full_flag
+m = zeros(1,l); % preallocate number of orthogonal matrix parameterization variables for each control matrix
+for i = 1:l % loop over number of control matrices
+    if K_flag > 1
         m(i) = (n(i)^2-n(i))/2;
     end
 end
@@ -51,25 +40,32 @@ end
 lb = lb_lambda*ones(sum(n),1);
 ub = ub_lambda*ones(sum(n),1);
 
-% set bounds on the parameters that parameterize the off-diagonal elements
-if full_flag
-    if param_flag == 1
-        lb = [lb; zeros(sum(m),1)];
-        ub = [ub;  ones(sum(m),1)];
-    elseif param_flag == 2
-        lb = [lb; -100*ones(sum(m),1)];
-        ub = [ub;  100*ones(sum(m),1)];
-    end
+% set bounds on the orthogonal matrix parameterization variables
+if K_flag == 2
+    lb = [lb;     zeros(sum(m),1)];
+    ub = [ub; 2*pi*ones(sum(m),1)];
+elseif K_flag == 3
+    lb = [lb; -100*ones(sum(m),1)];
+    ub = [ub;  100*ones(sum(m),1)];
+elseif K_flag == 4
+    lb = [lb; -(pi-0.001)*ones(sum(m),1)];
+    ub = [ub;  (pi-0.001)*ones(sum(m),1)];
 end
 
 % set other particle swarm options
-pso_options = optimoptions(pso_options,'Display','iter','PlotFcn','pswplotbestf');
+% pso_options = optimoptions(pso_options,'Display','iter','PlotFcn','pswplotbestf');
+pso_options = optimoptions(pso_options,'Display','iter');
 
 % run particle swarm
-k_sol = zeros(sum(n+m),num_pso_runs);
-obj   = zeros(1,num_pso_runs);
+num_dv    = sum(n)+sum(m);
+k_sol     = zeros(num_dv,num_pso_runs);
+obj       = zeros(1,num_pso_runs);
+output    = cell(1,num_pso_runs);
+comp_time = zeros(1,num_pso_runs);
 for i = 1:num_pso_runs
-    [k_sol(:,i),obj(i)] = particleswarm(@(k) pso_func(k,your_func,param_flag,l,n,m),sum(n+m),lb,ub,pso_options);
+    tic
+    [k_sol(:,i),obj(i),~,output{i}] = particleswarm(@(k) pso_func(k,your_func,K_flag,l,n,m),num_dv,lb,ub,pso_options);
+    comp_time(i) = toc;
 end
 
 % determine best solution
@@ -77,7 +73,14 @@ end
 k_sol_best = k_sol(:,obj_best_ind);
 
 % re-evaluate to obtain final control matrices
-[~,K] = pso_func(k_sol_best,your_func,param_flag,l,n,m);
+[~,K] = pso_func(k_sol_best,your_func,K_flag,l,n,m);
+
+dt = char(datetime);
+dt = strrep(dt,'-','_');
+dt = strrep(dt,' ','_');
+dt = strrep(dt,':','_');
+
+save([prob_name,'_K_',num2str(K_flag),'_pso_runs_',num2str(num_pso_runs),'_',dt,'.mat'])
 
 %%
 

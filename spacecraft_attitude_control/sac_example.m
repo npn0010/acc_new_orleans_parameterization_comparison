@@ -1,18 +1,21 @@
 function [obj,out] = sac_example(K_p,K_d)
 out = [];
 
-J = diag([10; 15; 20]); % moment of inertia
+J = diag([140; 100; 80]);
 
-tf = 60;
+tf = 350;
 
-psi_0   = deg2rad(60);
-theta_0 = deg2rad(80);
-phi_0   = deg2rad(-60); 
-euler_0 = [psi_0,theta_0,phi_0];
-q_0     = eul2quat(euler_0).';
+% example 8.18 from Schaub and Junkins
 
-w_0 = [0; 0; 0]; % rest-to-rest
-% w_0 = [0.01; -0.01; 0.01]; % detumble
+sigma = [0.6; -0.4; 0.2]; % modified rodrigues parameters
+sigma_norm = sqrt(sigma.'*sigma);
+
+% convert to quaternions
+q_0 = [0; 0; 0; 0]; 
+q_0(1) = (1-sigma_norm^2)/(1+sigma_norm^2);
+q_0(2:4) = 2*sigma/(1+sigma_norm^2);
+
+w_0 = [0.70; 0.20; -0.15];
 
 X_0 = [q_0;w_0];
 
@@ -46,59 +49,7 @@ if nargout > 1
     wy = X(:,6);
     wz = X(:,7);
 
-    plot_title = sprintf('$J = %g$ [kg$\\cdot$m$^2$/s]',X(end,8));
-    
-    n = length(K_p);  % Change this to your desired matrix size
-    
-    % Build the matrix string for LaTeX display
-    matrixStr = '\left[\begin{array}{';
-    for i = 1:n
-        matrixStr = [matrixStr 'c'];  % Add column alignment (c for center alignment)
-    end
-    matrixStr = [matrixStr '}'];
-    
-    % Fill in the matrix elements into the LaTeX string
-    for i = 1:n
-        for j = 1:n
-            matrixStr = [matrixStr sprintf('%g', K_p(i,j))];  % Format numbers to 2 decimal places
-            if j < n
-                matrixStr = [matrixStr ' & '];  % Add column separator if not the last element in the row
-            end
-        end
-        if i < n
-            matrixStr = [matrixStr ' \\\\ '];  % Add row separator if not the last row
-        end
-    end
-    
-    matrixStr = [matrixStr '\end{array}\right]'];
-    
-    matrixStr_K_p = matrixStr;
-    
-    n = length(K_d);  % Change this to your desired matrix size
-    
-    % Build the matrix string for LaTeX display
-    matrixStr = '\left[\begin{array}{';
-    for i = 1:n
-        matrixStr = [matrixStr 'c'];  % Add column alignment (c for center alignment)
-    end
-    matrixStr = [matrixStr '}'];
-    
-    % Fill in the matrix elements into the LaTeX string
-    for i = 1:n
-        for j = 1:n
-            matrixStr = [matrixStr sprintf('%g', K_d(i,j))];  % Format numbers to 2 decimal places
-            if j < n
-                matrixStr = [matrixStr ' & '];  % Add column separator if not the last element in the row
-            end
-        end
-        if i < n
-            matrixStr = [matrixStr ' \\\\ '];  % Add row separator if not the last row
-        end
-    end
-    
-    matrixStr = [matrixStr '\end{array}\right]'];
-    
-    matrixStr_K_d = matrixStr;
+    plot_title = sprintf('$J = %g$ [kg$\\cdot$m$^2$/s]',X(end,8));    
     
     figure('Name','Quaternions')
     hold on
@@ -108,6 +59,7 @@ if nargout > 1
     plot(t,q1,'-r','DisplayName','$q_1$')
     plot(t,q2,'-g','DisplayName','$q_2$')
     plot(t,q3,'-b','DisplayName','$q_3$')
+    plot(t,vecnorm([q0 q1 q2 q3],2,2),'c-','DisplayName','$\|q\|$')
     xlabel('Time [s]','Interpreter','latex')
     ylabel('Quaternions [-]','Interpreter','latex')
     legend('Interpreter','latex','FontSize',legend_fs,'Orientation','horizontal','Location','best')
@@ -143,4 +95,42 @@ if nargout > 1
 end
 
 
+end
+
+function [dXdt,tau] = sac_eom(t,X,J,K_p,K_d)
+
+q = X(1:4);
+w = X(5:7);
+    
+% Lyapunov-based Control Law
+tau = -K_p * q(2:4) - K_d * w;  % Control torque
+
+% tau_max = 1;
+% 
+% if abs(tau(1)) > tau_max
+%     tau(1) = sign(tau(1))*tau_max;
+% end
+% 
+% if abs(tau(2)) > tau_max
+%     tau(2) = sign(tau(2))*tau_max;
+% end
+% 
+% if abs(tau(3)) > tau_max
+%     tau(3) = sign(tau(3))*tau_max;
+% end
+    
+% Spacecraft dynamics (Euler's equations of motion)
+dw = J\(tau - cross(w, J * w));  % Angular acceleration
+    
+% Quaternion kinematics (update quaternion)
+Omega = [   0 -w(1) -w(2) -w(3); 
+         w(1)     0  w(3) -w(2);
+         w(2) -w(3)     0  w(1);
+         w(3)  w(2) -w(1)     0];
+
+% quaternions time derivative
+dq = 1/2*Omega*q;
+
+dXdt = [dq; dw; 1/2*(tau.'*tau)];
+   
 end
