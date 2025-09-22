@@ -20,7 +20,7 @@ x_0 = [q_0; w_0];
 
 ode_opts = odeset('RelTol',1e-10,'AbsTol',1e-10,'Events',@(t,X) sac_event_function(t,X));
 
-[t,x,te,ye,ie]= ode113(@(t,x) sac_eom(t,x,u_max,J,K_p,K_d),[0 tf],[x_0; 0],ode_opts);
+[t,x,~,~,ie]= ode113(@(t,x) sac_eom(t,x,u_max,J,K_p,K_d),[0 tf],[x_0; 0],ode_opts);
 
 % check if it converged
 if ie == 1

@@ -17,11 +17,11 @@ initial_guess = [7.11 7.11 7.11 18.67 2.67 10.67]; % diagonal parameterization i
 lb_lambda = 1e-8;
 ub_lambda = 20;
 
-num_solver_runs = 3;
+num_solver_runs = 1;
 
-K_flag_vec = [2]; % 1 - diagonal, 2 - givens, 3 - cayley, 4 - cayley mapped
+K_flag_vec = [1 2 3 4]; % 1 - diagonal, 2 - givens, 3 - cayley, 4 - cayley mapped
 
-sol_method_vec = [3]; % 1 - ga, 2 - particleswarm, 3 - patternsearch, 4 - simulannealbnd, 5 - surrogateopt
+sol_method_vec = [1 2 3 4 5]; % 1 - ga, 2 - particleswarm, 3 - patternsearch, 4 - simulannealbnd, 5 - surrogateopt
 
 %%
 
@@ -104,4 +104,39 @@ k_best = k_sol{I1,I2,I3};
 
 save(['solutions',filesep,matfilename])
 
+%%
 
+figure
+hold on
+box on
+grid minor
+axis padded
+
+color_vec = {'red','green','blue','cyan'};
+marker_vec = {'o','square','diamond','^','v'};
+color_legend_labels = {'$K_\mathrm{D}$','$K_\mathrm{G}$','$K_\mathrm{C}$','$K_\mathrm{M}$'};
+marker_legend_labels = {'GA','PSO','PS','SA','SO'};
+
+for i = K_flag_vec
+    for j = sol_method_vec
+        plot(comp_time(i,j,:),-1./obj(i,j,:),'Marker',marker_vec{j},'Color',color_vec{i},'HandleVisibility','off','MarkerSize',10)
+    end
+end
+
+k = 1;
+for i = K_flag_vec
+    for j = sol_method_vec
+        if k == 1
+            le_s{j} = plot(nan,'k','LineStyle','none','Marker',marker_vec{j},'DisplayName',marker_legend_labels{j});
+        end
+    end
+    k = k + 1;
+    le_c{i} = plot(nan,'o','Color',color_vec{i},'MarkerFaceColor',color_vec{i},'DisplayName',color_legend_labels{i});
+end
+
+xlabel('Computational Time [s]','Interpreter','latex')
+ylabel('$J$ [-]','Interpreter','latex')
+
+legend('Interpreter','latex','NumColumns',2)
+
+set(gca,'FontSize',16,'TickLabelInterpreter','latex')
