@@ -2,6 +2,7 @@
 *
 
 # Unignore all files inside this subdirectory
+!spacecraft_attitude_control/
 !spacecraft_attitude_control/*
 
 # Keep these files
