@@ -4,6 +4,9 @@
 # But not these files...
 !.gitignore
 !*.m
+!sac_constrained_sol.mat
+!sac_unconstrained_sol.mat
+!*/spacecraft_attitude_control/figures
 # etc...
 
 # ...even if they are in subdirectories
