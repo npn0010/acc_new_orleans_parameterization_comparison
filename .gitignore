@@ -1,9 +1,6 @@
 # Ignore everything
 *
 
-# Allow directories to be traversed
-!*/
-
 # Keep these files
 !.gitignore
 !*.m
