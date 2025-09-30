@@ -152,8 +152,8 @@ legend('Interpreter','latex','Orientation','horizontal')
 
 set(gca,'FontSize',16,'TickLabelInterpreter','latex')
 
-exportgraphics(gcf,[gcf().Name,'_',matfilename(1:end-4),'.pdf'],'ContentType','vector')
-savefig(gcf,[gcf().Name,'_',matfilename(1:end-4)])
+exportgraphics(gcf,['solutions',filesep,'figures',filesep,gcf().Name,'_',matfilename(1:end-4),'.pdf'],'ContentType','vector')
+savefig(gcf,['solutions',filesep,'figures',filesep,gcf().Name,'_',matfilename(1:end-4)])
 
 %%
 
@@ -191,5 +191,5 @@ xticklabels(marker_legend_labels(K_flag_vec))
 ylabel('$J$','Interpreter','latex')
 set(gca,'TickLabelInterpreter','latex','FontSize',16)
 
-exportgraphics(gcf,[gcf().Name,'_',matfilename(1:end-4),'.pdf'],'ContentType','vector')
-savefig(gcf,[gcf().Name,'_',matfilename(1:end-4)])
+exportgraphics(gcf,['solutions',filesep,'figures',filesep,gcf().Name,'_',matfilename(1:end-4),'.pdf'],'ContentType','vector')
+savefig(gcf,['solutions',filesep,'figures',filesep,gcf().Name,'_',matfilename(1:end-4)])
