@@ -4,6 +4,8 @@
 # Unignore all files inside this subdirectory
 !spacecraft_attitude_control/
 !spacecraft_attitude_control/*
+!spacecraft_attitude_control/figures/
+!spacecraft_attitude_control/figures/*
 
 # Keep these files
 !.gitignore
