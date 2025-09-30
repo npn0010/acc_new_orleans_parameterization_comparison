@@ -1,16 +1,15 @@
 # Ignore everything
 *
 
-# But not these files...
+# Allow directories to be traversed
+!*/
+
+# Keep these files
 !.gitignore
 !*.m
 !sac_constrained_sol.mat
 !sac_unconstrained_sol.mat
-!/spacecraft_attitude_control/figures
 # etc...
 
-# ...even if they are in subdirectories
-!*/
-
-# Ignore Everything Folder for Scratch Work
-scratch/
+# Unignore all files inside this subdirectory
+!spacecraft_attitude_control/**
