@@ -10,6 +10,7 @@
 # Keep these files
 !.gitignore
 !*.m
-!sac_constrained_sol.mat
-!sac_unconstrained_sol.mat
 # etc...
+
+# Ignore all .DS_Store
+.DS_Store
