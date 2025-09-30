@@ -1,12 +1,7 @@
-function sac_output(t,x,u_max,J,K_p,K_d)
+function sac_output(t,x,u)
 
 legend_fs = 12;
 fs = 12;
-
-u = zeros(3,length(t));
-for i = 1:length(t)
-    [~,u(:,i)] = sac_eom(t(i),x(i,:).',u_max,J,K_p,K_d);
-end
 
 q0 = x(:,1);
 q1 = x(:,2);
@@ -50,9 +45,9 @@ figure('Name','Control')
 hold on
 box on
 axis padded
-plot(t,u(1,:),'-r','DisplayName','$u_1$')
-plot(t,u(2,:),'-g','DisplayName','$u_2$')
-plot(t,u(3,:),'-b','DisplayName','$u_3$')
+plot(t,u(:,1),'-r','DisplayName','$u_1$')
+plot(t,u(:,2),'-g','DisplayName','$u_2$')
+plot(t,u(:,3),'-b','DisplayName','$u_3$')
 xlabel('Time [s]','Interpreter','latex')
 ylabel('Control [N$\cdot$m]','Interpreter','latex')
 legend('Interpreter','latex','FontSize',legend_fs,'Orientation','horizontal','Location','best')

@@ -40,7 +40,7 @@ else % full matrices
         elseif K_flag == 3 % cayley transform parameterization
             Q{i} = cayley(theta{i});
         elseif K_flag == 4 % cayley transform parameterization with mapping
-            Q{i} = cayley(tan(theta{i}/2));
+            Q{i} = cayley(tan(theta{i}));
         end
     end
 end

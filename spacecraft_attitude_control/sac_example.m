@@ -1,10 +1,8 @@
-function [obj,out] = sac_example(u_max,K_p,K_d)
+function [obj,out] = sac_example(u_max,tf,K_p,K_d)
 
 % example 8.18 and 8.20 from Schaub and Junkins
 
 J = diag([140; 100; 80]); % spacecraft inertia matrix
-
-tf = 350; % maximum manuever time
 
 sigma = [0.6; -0.4; 0.2]; % initial orientation in modified rodrigues parameters (MRP)
 sigma_norm = sqrt(sigma.'*sigma); % norm of MRP
@@ -29,10 +27,16 @@ else
     obj = sac_event_function(t(end),x(end,:)); % return final error if didn't converge
 end
 
-out = {t,x,u_max,J,K_p,K_d};
+out = [];
 
 if nargout > 1
-    sac_output(out{:});
+    u = zeros(3,length(t));
+    for i = 1:length(t)
+        [~,u(:,i)] = sac_eom(t(i),x(i,:).',u_max,J,K_p,K_d);
+    end
+    u = u.';
+    sac_output(t,x,u)
+    out = {t,x,u,u_max,J,K_p,K_d};
 end
 
 end
